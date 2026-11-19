@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "version": 2,
+    "updated": "2026-11-18",
+    "deliverable": "0.7 input: how x and y are paired",
+    "design": "pseudo_panel",
+    "how_to_read": [
+      "PISA is cross-sectional: no student is observed twice. We follow GROUPS instead (a pseudo-panel, Deaton 1985).",
+      "For each enabled pair, each country c and each group g: x = representative state vector of (c, g) in the 'from' cycle, y = the same group's vector in the 'to' cycle.",
+      "x and y share the same n state factors (factor_dict.json, role 'state'), so M is square (n x n), which Phase 4 needs for eigen-analysis.",
+      "Columns of X and Y are stacked over pairs, countries and groups: X, Y are n x N. Phase 1 solves M_G X = Y over the 'global' pairs; Phase 2 fits Delta M on the 'philippines' pairs.",
+      "A pair is used only if enabled AND both cycles are in config cycles.years AND both files are set in config paths.raw_files (imple.config.transition_pairs / available_cycles).",
+      "International files for 2000-2015 exist too. To use them, add the years to cycles.years, add their column names in config columns, and add pairs here; most attitudinal indices are named or scaled differently before 2018."
+    ],
+    "interpretation": "M maps a group's situation at one cycle to its situation one cycle later, an approximate 'one-cycle step' of the educational trajectory.",
+    "years_between_cycles_note": "2018 to 2022 is 4 years (2021 was postponed by COVID-19); 2022 to 2025 is 3. Use 'years' to normalise if per-year rates are needed."
+  },
+
+  "global": [
+    { "id": "G_2018_2022", "from": 2018, "to": 2022, "years": 4, "enabled": true,
+      "notes": "Includes the COVID-19 disruption for every country." },
+    { "id": "G_2022_2025", "from": 2022, "to": 2025, "years": 3, "enabled": true,
+      "notes": "Post-pandemic step." }
+  ],
+
+  "philippines": [
+    { "id": "PH_2018_2022", "from": 2018, "to": 2022, "years": 4, "enabled": true,
+      "notes": "Delta M from this pair also absorbs the PH-specific pandemic shock (one of the longest school closures worldwide); state this in the limitations." },
+    { "id": "PH_2022_2025", "from": 2022, "to": 2025, "years": 3, "enabled": true,
+      "notes": "Second PH pair. Fitting M_PH on each pair separately gives the cycle-to-cycle consistency check in Phase 3.4." }
+  ],
+
+  "validation": {
+    "holdout": "leave_one_country_out",
+    "notes": "Phase 3.5 held-out accuracy: refit M_G without one country, predict that country's y from x, repeat."
+  }
+}

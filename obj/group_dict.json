@@ -1,0 +1,65 @@
+{
+  "_meta": {
+    "version": 1,
+    "updated": "2026-11-18",
+    "deliverable": "0.5 Selected demographic groups (group dictionary)",
+    "how_to_read": [
+      "Variables are ALIASES from config/variables.json; category codes come from config 'codes', so a recoded category is changed there, not here.",
+      "A rule is a list of conditions joined by AND. Each condition is {var, op, value}. Supported ops: 'in' (value is a list of codes or a 'codes.X.y' reference), 'between' (inclusive [lo, hi] on a derived quantile), '==' and '!='.",
+      "Groups may overlap; they do not partition the data.",
+      "Groups are formed within each (country, cycle). Group definitions must be stable over time because the pseudo-panel in transition_pairs.json follows the same group from one cycle to the next.",
+      "size_intl and size_ph are filled in by the preprocessing code (number of students, weighted population)."
+    ],
+    "min_students_per_cell": "countries.sample_threshold"
+  },
+  "derived": {
+    "ESCS_PCTL": {
+      "source": "ESCS",
+      "method": "weighted_percentile_rank",
+      "within": [
+        "COUNTRY",
+        "CYCLE"
+      ],
+      "notes": "Weighted percentile rank of ESCS inside each country and cycle, in [0, 1]. Quartiles are relative to the student's own country."
+    },
+    "LOCATION": {
+      "source": "SCHOOL_COMMUNITY",
+      "method": "map_codes",
+      "map": {
+        "rural": "codes.SCHOOL_COMMUNITY.rural",
+        "town": "codes.SCHOOL_COMMUNITY.town",
+        "city": "codes.SCHOOL_COMMUNITY.city"
+      },
+      "notes": "OECD convention: rural = village under 3,000 people, town = 3,000 to 100,000, city = over 100,000."
+    },
+    "PH_REGION": {
+      "source": "STRATUM",
+      "method": "map_codes",
+      "map": {},
+      "enabled": false,
+      "notes": "TODO: fill from the PHL stratum labels in the codebook (e.g. NCR, Luzon, Visayas, Mindanao). Needed for Phase 5; global data has no comparable region."
+    }
+  },
+  "_template": {
+    "id": "<UPPER_SNAKE, unique>",
+    "label": "<human-readable name>",
+    "rule": [
+      {
+        "var": "<config alias or a key of 'derived'>",
+        "op": "in | == | != | between",
+        "value": "<'codes.<ALIAS>.<label>' for in; a label for ==/!=; [lo, hi] for between>"
+      }
+    ],
+    "rationale": "<why this group matters for a research question or hypothesis>",
+    "used_in": [
+      "phase1",
+      "phase2",
+      "phase4",
+      "phase5"
+    ],
+    "ph_only": false,
+    "size_intl": null,
+    "size_ph": null
+  },
+  "groups": []
+}

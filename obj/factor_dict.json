@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "version": 1,
+    "updated": "2026-11-18",
+    "deliverable": "0.3 Selected factors (factor dictionary)",
+    "how_to_read": [
+      "Each factor is keyed by an ALIAS defined in config/variables.json -> columns. Raw PISA names live only there.",
+      "role: 'state' = an entry of the state vector (appears in both x and y, so M is square n x n); 'grouping' = only used to define groups; 'metadata' = carried along, not modelled.",
+      "The order of the 'state' entries below IS the order of the vector entries. n = number of included state factors.",
+      "category is used in Phase 4 weight analysis (NLA hypothesis): outcome, socioeconomic, regional, school, individual, attitudinal.",
+      "higher_is: whether a larger value is favourable ('better'), unfavourable ('worse') or neutral. Nothing is recoded; this only guides interpretation of signs.",
+      "encode: how a student-level value is built. aggregate: how students are combined into a group's representative vector (always with the final student weight).",
+      "missing_pct and n_valid are filled in by the preprocessing code (deliverable 0.4); leave them null here.",
+      "dimension_count is n, the number of included 'state' factors. imple.config.state_factors() computes it; set it here only as a record once factors are final."
+    ],
+    "dimension_count": null
+  },
+  "_note": "To be filled up later once the datasets are available.",
+  "_template": {
+    "alias": "<UPPER_SNAKE; a key of config columns, or a new name if derived>",
+    "label": "<human-readable name used in tables and plots>",
+    "category": "outcome | socioeconomic | regional | school | individual | attitudinal",
+    "role": "state | grouping | metadata",
+    "type": "continuous | binary | ordinal | categorical",
+    "source_alias": "<key of config columns the value is read from>",
+    "encode": {
+      "type": "as_is | pv_mean | binary | category",
+      "true_codes": "<binary only: 'codes.<ALIAS>.<label>' reference>",
+      "codes": "<category only: 'codes.<ALIAS>' reference>",
+      "divide_by": "<pv_mean only: 'preprocessing.pv_scale_divisor'>",
+      "clip_quantiles": "<optional [lo, hi], e.g. [0.01, 0.99]>"
+    },
+    "aggregate": "weighted_mean | weighted_share | null (null for grouping/metadata)",
+    "higher_is": "better | worse | neutral",
+    "reverse_code": false,
+    "available_in_ph": true,
+    "include": true,
+    "missing_pct": null,
+    "n_valid": null,
+    "notes": ""
+  },
+  "factors": []
+}
