@@ -2,8 +2,8 @@
 
     from pipeline import phase0, phase1, phase2
     data = phase0()                 # cleaned tables, groups, X/Y matrices
-    g = phase1(data)                # M_G and its effectiveness
-    ph = phase2(data, g)            # M_PH, dM and the comparison numbers
+    g = phase1(data)                # conditioning, solver comparison; M_G (skeleton)
+    ph = phase2(data, g)            # PH design and residual; dM, M_PH (skeleton)
 
 Every name, path and threshold comes from config/variables.json via imple.config.
 Outputs are written under config paths.processed_dir and paths.results_dir.
@@ -18,10 +18,8 @@ import pandas as pd
 
 from imple.config import (INTL, PHL, basis_year, factors, path,
                           state_factors, transition_pairs)
-from imple.lsq import fit_factor_matrix, relative_error
-from imple.perturbation import calibrate
+from imple.lsq import compare_methods
 from imple.svd import summary
-from imple.tikhonov import choose_lambda, fit_factor_matrix_tikhonov
 from prep.clean import (active_state, apply_scaler, drop_missing_codes, encode, fit_scaler,
                         missing_report, verification_log, write_back_missing)
 from prep.groups import derive, fit_group_ids, group_masks, group_sizes, write_back_sizes
@@ -122,30 +120,58 @@ def use_synthetic_data(root: str | None = None, seed: int = 138) -> str:
 
 
 def phase1(data: dict) -> dict:
-    """Global factor matrix M_G: plain least squares (all three methods) and Tikhonov."""
+    """Phase 1: global factor matrix M_G.  Steps 1-2 run; steps 3-4 are a SKELETON.
+
+    Pipeline idea
+      1. Conditioning of the design (1.1): SVD of X_g^T (N x n). kappa and rank say how well the
+         data can separate the effects of the 19 factors (near-collinear factors -> large kappa).
+      2. Solver comparison (1.2): normal / QR / SVD on the same weighted problem, against numpy.
+      3. M_G (1.4) = fit_factor_matrix(X_g, Y_g, method="qr", weights=column_weights(meta_g)).x
+         Decide and record: method (QR unless rank deficient -> SVD), column weighting
+         (config preprocessing.column_weighting), intercept or not (decisions note 6),
+         pooled fit over both cycle pairs vs one M_G per pair (Phase 3.4 consistency check).
+         Save M_G with metadata: N, pairs, weighting, method, residual, kappa.
+      4. Effectiveness (1.5): imple.effectiveness (ideas listed there).
+    """
     X, Y = data["X_g"], data["Y_g"]
     w = column_weights(data["meta_g"])
-    plain = {m: fit_factor_matrix(X, Y, method=m, weights=w) for m in ("normal", "qr", "svd")}
-    lam = choose_lambda(X.T, Y.T)
-    reg = fit_factor_matrix_tikhonov(X, Y, lam, M0=np.zeros((Y.shape[0], X.shape[0])), weights=w)
-    M_G = reg.x
-    effectiveness = data["meta_g"].assign(rel_error=relative_error(M_G, X, Y))
-    _save("M_G", M_G=M_G, lam=lam)
-    return dict(M_G=M_G, lam=lam, plain=plain, effectiveness=effectiveness,
-                X_summary=summary(X), M_summary=summary(M_G))
+    design = summary(X.T)                                   # 1.1
+    comparison, candidates = compare_methods(X, Y, w)       # 1.2
+
+    # 1.4 TODO: choose and save M_G (see docstring step 3)
+    M_G = None
+    # _save("M_G", M_G=M_G, state=np.array(data["state"]), ...)
+
+    # 1.5 TODO: effectiveness, e.g.
+    # eff = imple.effectiveness.column_errors(M_G, X, Y, data["meta_g"])
+    effectiveness = None
+    return dict(M_G=M_G, design=design, comparison=comparison, candidates=candidates,
+                effectiveness=effectiveness)
 
 
 def phase2(data: dict, g: dict) -> dict:
-    """Philippine factor matrix M_PH = M_G + dM, and the comparison with M_G."""
+    """Phase 2: Philippine factor matrix M_PH = M_G + dM.  Step 1 runs; steps 2-4 are a SKELETON.
+
+    Pipeline idea
+      1. PH design (2.1 input): SVD of X_ph^T. N_PH vs n tells whether dM X = R is under- or
+         over-determined; kappa(X_ph) enters the error bound in docs/perturbation.md (c).
+      2. Residual of the global matrix on PH data: R = Y_ph - M_G X_ph (needs M_G from Phase 1).
+      3. dM (2.2): one primary solver from the list in imple/perturbation.py
+         (minimum-norm, TSVD, low-rank, structured, ...), then M_PH = M_G + dM (2.3).
+         Report residual, ||dM||_F / ||M_G||_F, Weyl bound, leave-one-cell-out error. Save.
+      4. Comparison (2.4): imple.compare (ideas listed there).
+    """
     X, Y = data["X_ph"], data["Y_ph"]
-    cal = calibrate(g["M_G"], X, Y, weights=column_weights(data["meta_ph"]))
-    effectiveness = data["meta_ph"].assign(
-        rel_error_MG=relative_error(g["M_G"], X, Y),
-        rel_error_MPH=relative_error(cal.M_PH, X, Y),
-    )
-    _save("M_PH", M_PH=cal.M_PH, dM=cal.dM, lam=cal.lam)
-    return dict(cal=cal, effectiveness=effectiveness,
-                sv_G=summary(g["M_G"])["singular_values"], sv_PH=summary(cal.M_PH)["singular_values"])
+    design = summary(X.T)                                   # 2.1 input
+    n, N = X.shape
+    print(f"PH system dM X = R: {n}x{n} = {n * n} unknowns, {n * N} equations "
+          f"({'under' if N < n else 'over'}determined), rank(X_ph) = {design['numerical_rank']}")
+
+    R = None if g.get("M_G") is None else Y - g["M_G"] @ X   # 2.1 residual
+    # 2.2 / 2.3 TODO: dM = <solver>(R, X); M_PH = g["M_G"] + dM; _save("M_PH", ...)
+    dM = M_PH = None
+    # 2.4 TODO: imple.compare.perturbation_size(g["M_G"], dM), category_blocks(...), ...
+    return dict(design=design, R=R, dM=dM, M_PH=M_PH)
 
 
 def _save(name: str, **arrays) -> None:

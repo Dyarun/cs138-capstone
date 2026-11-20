@@ -39,7 +39,8 @@ def weighted_percentile_rank(values: pd.Series, weights: pd.Series) -> pd.Series
 def derive(df: pd.DataFrame) -> pd.DataFrame:
     """Add each entry of group_dict['derived'] that is not 'enabled': false.
        weighted_percentile_rank -> per groupby(entry['within']) (aliases COUNTRY, CYCLE)
-       map_codes                -> label for each code list in entry['map'] (resolve references)
+       map_codes                -> label for each code list in entry['map'] (resolve references),
+                                   or per cycle in entry['map_by_cycle'][<cycle>]
     """
     df = df.copy()
     for name, d in load_obj("group_dict").get("derived", {}).items():
@@ -59,9 +60,15 @@ def derive(df: pd.DataFrame) -> pd.DataFrame:
                 df[name] = weighted_percentile_rank(df[src], df["WEIGHT"])
         elif d["method"] == "map_codes":
             lab = pd.Series(pd.NA, index=df.index, dtype="object")
-            for label, vals in d["map"].items():
-                vals = resolve(vals)
-                lab[df[src].isin(vals if isinstance(vals, list) else [vals])] = label
+            if "map_by_cycle" in d:          # codes differ per cycle (e.g. PH strata)
+                for cyc, mapping in d["map_by_cycle"].items():
+                    in_cyc = df["CYCLE"] == int(cyc)
+                    for label, vals in mapping.items():
+                        lab[in_cyc & df[src].isin(resolve(vals))] = label
+            else:
+                for label, vals in d["map"].items():
+                    vals = resolve(vals)
+                    lab[df[src].isin(vals if isinstance(vals, list) else [vals])] = label
             df[name] = lab
         else:
             raise ValueError(f"derived '{name}': unknown method '{d['method']}'")

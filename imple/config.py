@@ -94,11 +94,15 @@ def raw_file(dataset: str, cycle: int | str, kind: str = "student") -> Path | No
 
     dataset: 'intl' or 'phl'. kind: 'student', 'school', 'math', 'science',
     'reading' or 'problem_solving' (any key under paths.raw_files.<dataset>.<cycle>).
-    File names are relative to paths.raw_dir and may include subfolders,
+    File names are resolved against the repository root first (committed files such as
+    datasets/PISA-2025.sav), then against paths.raw_dir; they may include subfolders,
     e.g. "intl/2018/CY07_MSU_STU_QQQ.sav".
     """
     name = cfg(f"paths.raw_files.{dataset}.{cycle}.{kind}")
-    return None if name is None else path("raw_dir") / name
+    if name is None:
+        return None
+    in_repo = REPO_ROOT / name                    # files committed to the repo (e.g. datasets/)
+    return in_repo if in_repo.exists() else path("raw_dir") / name
 
 
 def available_cycles(dataset: str, kind: str = "student") -> list[int]:

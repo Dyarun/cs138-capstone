@@ -55,7 +55,8 @@ PISA is cross-sectional, so no student is observed twice. We follow **groups** i
 - **Philippine rows** are taken from the international files (where CNT is PHL), unless separate PH files are set in the config.
 - **Column weighting in the fits** is `country_equal`: each country has the same total weight, split over its cells by population. This follows the OECD-average convention, so the largest systems do not dominate M_G.
 
-## 8. Pooled or per-group M_G
+## 8. Pooled or per-group M_G (one M for all (x, y) pairs, not one per pair)
+- **Why one M for many pairs.** M has n² = 361 unknowns, and one (x, y) pair gives only n = 19 equations. A matrix per pair would therefore have infinitely many exact solutions and mean nothing. M_G is fitted to **all** columns together, M_G X = Y (every cycle pair × country × fit cell). It is the one matrix that best maps every group's state to its next state in the least-squares sense.
 - **Primary:** one **pooled** M_G over all fit cells. Phase 2 calibrates a single M_PH = M_G + ΔM on the Philippine cells.
 - **Secondary (Phase 4.6):** per-quartile or per-location M_G, each fitted on its 3 or 4 cells. The Philippine data is too thin per cell (1–2 columns) for a per-cell M_PH.
 
@@ -65,8 +66,10 @@ PISA is cross-sectional, so no student is observed twice. We follow **groups** i
   - BULLIED was rebuilt (2018 `BEINGBULLIED`).
   - TEACHSUP and DISCLIM refer to test-language lessons in 2018 and to mathematics lessons in 2022.
   - `SC001Q01TA` gained a sixth "megacity" category in 2022, mapped to "city".
-- **2025 cycle:** results were released in September 2026. The config is ready for the microdata (`paths.raw_files.intl.2025`). The pipeline skips any cycle whose file is missing.
-- **Region (Phase 5):** the Philippine STRATUM must be mapped to regions from the codebook (`group_dict.derived.PH_REGION`, disabled until filled).
+- **2025 cycle:**
+  - Only the **school** questionnaire is in the repo (`datasets/PISA-2025.sav`: 25,133 schools, 208 of them Philippine). The cycle is used once the 2025 **student** file is added.
+  - In the 2025 public-use file, STRATIO exists only as an international quartile (`STRATIO_Q`), so it is set to null for 2025.
+- **Region (Phase 5):** `PH_REGION` (17 regions) and `PH_ISLAND_GROUP` (NCR, Luzon, Visayas, Mindanao) are mapped from the 2025 STRATUM labels. The 2018 and 2022 strata use other codes, so their maps still need to be added from those cycles' labels.
 
 ## 10. Outputs (paths.processed_dir)
 - `clean/clean_<dataset>_<cycle>.parquet` and `clean_<dataset>_all.parquet`: cleaned, encoded, **unscaled** student tables (deliverables 0.1 and 0.2).

@@ -11,17 +11,21 @@ obj/factor_dict.json       which factors enter the state vector (0.3): 19 state 
 obj/group_dict.json        derived variables + demographic groups (0.5): 12 fit cells + 14 descriptive
 obj/transition_pairs.json  which cycle pairs give (x, y) columns: global 2018→22, 22→25; PH the same
 imple/config.py            loader: col(), raw_file(), available_cycles(), state_factors(), groups(), transition_pairs()
-imple/svd.py               1.1 own SVD (one-sided Jacobi), rank, condition number, pinv, truncation   [stub]
-imple/lsq.py               1.2 normal equations / QR / SVD least squares, fit_factor_matrix            [stub]
-imple/tikhonov.py          1.3 Tikhonov with prior M0, GCV / L-curve choice of λ                       [stub]
-imple/perturbation.py      2.2 ΔM solver, M_PH, Weyl bound                                             [stub]
+imple/svd.py               1.1 SVD (numpy), rank, condition number, pinv, truncation                  [done]
+imple/lsq.py               1.2 normal eq. / QR / SVD least squares (numpy+scipy), method comparison   [done]
+imple/tikhonov.py          1.3 Tikhonov with prior M0, GCV / L-curve choice of λ          [left out for now]
+imple/perturbation.py      2.2 ΔM solver: list of candidate methods + stubs                       [skeleton]
+imple/effectiveness.py     1.5 effectiveness of M_G: analysis ideas + stubs                      [skeleton]
+imple/compare.py           2.4 M_G vs M_PH comparison: analysis ideas + stubs                    [skeleton]
+imple/report.py            Phase 1-2 figures (conditioning experiment, design spectra)              [done]
+docs/perturbation.md       2.1 derivation skeleton
 prep/load.py               0.1/0.2 read .sav, merge school file, rename to aliases, PH split, cache      [done]
 prep/clean.py              0.4 missing codes, encode, PV means, verification log, missing report, scaler [done]
 prep/groups.py             0.5 derived variables (ESCS_PCTL, LOCATION), group masks, sizes            [done]
 prep/vectors.py            0.6 representative vectors (+ CLT se), X and Y, coverage, column weights   [done]
 prep/report.py             Phase 0 tables and figure for the notebook                                 [done]
 docs/decisions.md          0.7 data-handling decisions note
-pipeline.py                glue: phase0() → phase1() → phase2(); the notebook calls these
+pipeline.py                glue: phase0() → phase1() → phase2(); phase 1-2 fits are skeletons
 tests/run_all.py           runs every module's synthetic self-test
 tests/synthetic_pisa.py    small FAKE PISA files (real names/layout) for testing before the data is in
 tests/test_phase0.py       Phase 0 checks: missing codes, quartiles, partition, scaler, vectors, X/Y

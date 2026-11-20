@@ -1,5 +1,6 @@
-# Core numerics (own SVD / least squares / Tikhonov use numpy only for array arithmetic)
+# Core numerics (SVD and least squares via numpy/scipy LAPACK routines)
 numpy>=1.24
+scipy>=1.10
 # Data handling: PISA .sav files, weighted group summaries, parquet outputs
 pandas>=2.0
 pyreadstat>=1.2

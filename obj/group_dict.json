@@ -29,9 +29,80 @@
     "PH_REGION": {
       "source": "STRATUM",
       "method": "map_codes",
-      "map": {},
-      "enabled": false,
-      "notes": "TODO (needs the PHL codebook): map the PHL STRATUM codes to regions (e.g. NCR, rest of Luzon, Visayas, Mindanao). prep.load.stratum_labels() prints the labels from the .sav metadata. Needed for Phase 5; the global data has no comparable region."
+      "map_by_cycle": {
+        "2025": {
+          "Region 1": ["PHL01", "PHL02", "PHL03"],
+          "Region 2": ["PHL04", "PHL05", "PHL06"],
+          "Region 3": ["PHL07", "PHL08", "PHL09"],
+          "Region 4A": ["PHL10", "PHL11", "PHL12"],
+          "Region 4B": ["PHL13", "PHL14", "PHL15"],
+          "Region 5": ["PHL16", "PHL17", "PHL18"],
+          "Region 6": ["PHL19", "PHL20", "PHL21"],
+          "Region 7": ["PHL22", "PHL23", "PHL24"],
+          "Region 8": ["PHL25", "PHL26", "PHL27"],
+          "Region 9": ["PHL28", "PHL29", "PHL30"],
+          "Region 10": ["PHL31", "PHL32", "PHL33"],
+          "Region 11": ["PHL34", "PHL35", "PHL36"],
+          "Region 12": ["PHL37", "PHL38", "PHL39"],
+          "CAR": ["PHL40", "PHL41", "PHL42"],
+          "CARAGA": ["PHL43", "PHL44", "PHL45"],
+          "NCR": ["PHL46", "PHL47", "PHL48"]
+        }
+      },
+      "enabled": true,
+      "notes": "17 strata regions from the 2025 STRATUM value labels (e.g. PHL11 = 'Region 4A, Public-Regular'); BARMM has no stratum in 2025. 2018/2022 strata use other codes: add their maps under map_by_cycle once prep.load.stratum_labels(2018/2022) is run. Cycles without a map get NaN. Needed for Phase 5."
+    },
+    "PH_ISLAND_GROUP": {
+      "source": "STRATUM",
+      "method": "map_codes",
+      "map_by_cycle": {
+        "2025": {
+          "Luzon": [
+            "PHL01",
+            "PHL02",
+            "PHL03",
+            "PHL04",
+            "PHL05",
+            "PHL06",
+            "PHL07",
+            "PHL08",
+            "PHL09",
+            "PHL10",
+            "PHL11",
+            "PHL12",
+            "PHL13",
+            "PHL14",
+            "PHL15",
+            "PHL16",
+            "PHL17",
+            "PHL18",
+            "PHL40",
+            "PHL41",
+            "PHL42"
+          ],
+          "Visayas": ["PHL19", "PHL20", "PHL21", "PHL22", "PHL23", "PHL24", "PHL25", "PHL26", "PHL27"],
+          "Mindanao": [
+            "PHL28",
+            "PHL29",
+            "PHL30",
+            "PHL31",
+            "PHL32",
+            "PHL33",
+            "PHL34",
+            "PHL35",
+            "PHL36",
+            "PHL37",
+            "PHL38",
+            "PHL39",
+            "PHL43",
+            "PHL44",
+            "PHL45"
+          ],
+          "NCR": ["PHL46", "PHL47", "PHL48"]
+        }
+      },
+      "enabled": true,
+      "notes": "NCR / rest of Luzon / Visayas / Mindanao, coarser version of PH_REGION for small samples."
     }
   },
   "_template": {

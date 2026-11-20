@@ -30,14 +30,21 @@
           "reading": null,
           "problem_solving": null
         },
-        "2025": {"student": null, "school": null, "math": null, "science": null, "reading": null, "problem_solving": null}
+        "2025": {
+          "student": null,
+          "school": "datasets/PISA-2025.sav",
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        }
       },
       "phl": {
         "2018": {"student": null, "school": null, "math": null, "science": null, "reading": null, "problem_solving": null},
         "2022": {"student": null, "school": null, "math": null, "science": null, "reading": null, "problem_solving": null},
         "2025": {"student": null, "school": null, "math": null, "science": null, "reading": null, "problem_solving": null}
       },
-      "_note": "File names relative to paths.raw_dir (or $CS138_RAW_DIR). 2018/2022 names are the OECD SPSS downloads. The 'phl' entries can stay null: the Philippine sample (CNT == PHL) is then taken from the international file of the same cycle. 2025 microdata: fill in once the OECD database is downloadable."
+      "_note": "File names are resolved against the repository root first (e.g. datasets/PISA-2025.sav, committed), then against paths.raw_dir (or $CS138_RAW_DIR). 2018/2022 names are the OECD SPSS downloads. The 'phl' entries can stay null: the Philippine sample (CNT == PHL) is taken from the international file of the same cycle. 2025: only the SCHOOL questionnaire is in the repo; the cycle is used once the 2025 student file is added."
     }
   },
   "cycles": {"years": [2018, 2022, 2025], "basis": 2018},
@@ -99,7 +106,13 @@
     "DISCLIM": {"source": "student", "2018": "DISCLIMA", "2022": "DISCLIM", "2025": "DISCLIM"},
     "SCHOOL_COMMUNITY": {"source": "school", "2018": "SC001Q01TA", "2022": "SC001Q01TA", "2025": "SC001Q01TA"},
     "SCHOOL_TYPE": {"source": "school", "2018": "SC013Q01TA", "2022": "SC013Q01TA", "2025": "SC013Q01TA"},
-    "STRATIO": {"source": "school", "2018": "STRATIO", "2022": "STRATIO", "2025": "STRATIO"},
+    "STRATIO": {
+      "source": "school",
+      "2018": "STRATIO",
+      "2022": "STRATIO",
+      "2025": null,
+      "_note": "2025 public-use file has only STRATIO_Q (international quartile, medians 5/9/13/20), not the ratio itself. Options: map quartile -> median, or drop STRATIO from the state when 2025 is used."
+    },
     "EDUSHORT": {"source": "school", "2018": "EDUSHORT", "2022": "EDUSHORT", "2025": "EDUSHORT"},
     "STAFFSHORT": {"source": "school", "2018": "STAFFSHORT", "2022": "STAFFSHORT", "2025": "STAFFSHORT"}
   },

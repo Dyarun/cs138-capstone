@@ -1,18 +1,44 @@
-"""2.2 Perturbation solver: calibrate M_G into M_PH = M_G + dM.
+"""2.2 Perturbation system solver: calibrate M_G into M_PH = M_G + dM. METHOD LIST + STUBS.
 
-Derivation (deliverable 2.1, written in the notebook):
-  (a) First order. (M + dM)(x + dx) = y + dy, drop dM dx:
-          dM x = dy - M dx = r
-      Minimum-norm solution for one pair: dM = r x^T / ||x||^2.
-      For many PH columns: dM X = R with R = Y_PH - M_G X_PH, min-norm dM = R X^+.
-  (b) Regularised. min ||(M_G + dM) X - Y||^2 + lam ||dM||^2
-      = Tikhonov on the residual R with prior 0
-      = Tikhonov on Y with prior M_G (same answer, imple.tikhonov).
-      This is what keeps the fit stable when PH has few group columns (N_PH < n).
-  (c) Bounds. Weyl: |sigma_i(M_PH) - sigma_i(M_G)| <= ||dM||_2.
-      Sensitivity of the solve to noise in X: relative error <~ kappa(X) * relative noise.
+The derivation skeleton (deliverable 2.1) is in docs/perturbation.md and the notebook.
 
-Uses: imple.svd, imple.tikhonov.  Used by: pipeline.phase2, Phase 3 stability tests.
+The system.  With R = Y_PH - M_G X_PH (what the global matrix fails to explain for PH),
+the calibration solves
+        dM X_PH = R              X_PH: n x N_PH,  dM: n x n,  R: n x N_PH
+i.e. n least-squares problems  X_PH^T dm_i = r_i  (one per row i of dM) sharing one
+design matrix. n = 19 and N_PH <= 12 cells per cycle pair, so the system is usually
+UNDERDETERMINED (n^2 = 361 unknowns, n * N_PH equations): it has infinitely many exact
+solutions and the solver choice is really a choice of which one to prefer.
+
+Candidate solvers (pick one primary + one or two for comparison; justify in 2.1)
+--------------------------------------------------------------------------------
+ 1. Minimum-norm (pseudoinverse)      dM = R X_PH^+                     imple.svd.pinv
+    The smallest dM that explains the PH data exactly (first-order solution).
+    Exact fit -> overfits sampling noise when N_PH <= n. Baseline / derivation (a).
+ 2. QR least squares                   X_PH^T dM^T = R^T                 imple.lsq (method 'qr')
+    Only when N_PH > n and X_PH has full row rank (e.g. after adding 2025 pairs).
+ 3. Truncated SVD (TSVD)               keep the k largest s_i of X_PH    imple.svd
+    Drops directions the PH data barely measures; k by the discrepancy principle
+    (residual ~ CLT noise level) or leave-one-cell-out.
+ 4. Tikhonov / ridge toward M_G        dM = R X^T (X X^T + lam I)^-1     (Phase 1.3, optional)
+    = min ||(M_G + dM) X - Y||^2 + lam ||dM||^2: shrinks M_PH to M_G where PH data is thin.
+    Same as a Gaussian prior dM ~ N(0, tau^2) with lam = sigma^2 / tau^2 (Bayesian reading).
+ 5. Low-rank dM (reduced-rank)          rank(dM) <= r                    truncated SVD of solution 1
+    "The PH differs from the world along r directions"; r = 1 or 2 is very interpretable.
+ 6. Structured dM (column subset)       dM nonzero only in chosen columns  imple.lsq on a smaller system
+    e.g. only socioeconomic + regional columns may differ -> a direct test of the NLA hypothesis
+    (compare the fit with and without the restriction). L1 / LASSO (ISTA) is the sparse variant.
+ 7. Multiplicative calibration          M_PH = D_r M_G D_c (diagonal D)   alternating least squares
+    2n parameters instead of n^2: "each factor's effect is scaled up or down in the PH".
+ 8. Iterative with early stopping       LSQR / CGLS / Landweber          scipy.sparse.linalg.lsqr
+    The number of iterations acts as the regulariser (semi-convergence).
+ 9. Full refit on PH only               M_PH = Y X_PH^+ (no M_G)          comparison only
+    Shows why calibration is needed: with N_PH < n it ignores everything the world data says.
+
+Checks every solver should report: residual ||M_PH X - Y||, size ||dM||_F / ||M_G||_F,
+Weyl bound ||dM||_2, and leave-one-cell-out error (the honest accuracy when N_PH is small).
+
+Uses: imple.svd, imple.lsq.  Used by: pipeline.phase2, Phase 3 stability tests.
 """
 from __future__ import annotations
 
