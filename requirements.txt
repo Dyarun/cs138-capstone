@@ -1,0 +1,10 @@
+# Core numerics (own SVD / least squares / Tikhonov use numpy only for array arithmetic)
+numpy>=1.24
+# Data handling: PISA .sav files, weighted group summaries, parquet outputs
+pandas>=2.0
+pyreadstat>=1.2
+pyarrow>=14
+# Figures: heatmaps, singular value plots, effectiveness tables
+matplotlib>=3.7
+# Notebook for the preliminary report and final paper
+jupyter>=1.0

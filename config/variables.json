@@ -1,0 +1,216 @@
+{
+  "paths": {
+    "raw_dir": "data/raw",
+    "processed_dir": "data/processed",
+    "results_dir": "results",
+    "factor_dict": "obj/factor_dict.json",
+    "group_dict": "obj/group_dict.json",
+    "transition_pairs": "obj/transition_pairs.json",
+    "raw_files": {
+      "intl": {
+        "2000": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2003": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2006": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2009": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2012": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2015": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2018": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2022": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2025": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        }
+      },
+      "phl": {
+        "2018": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2022": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        },
+        "2025": {
+          "student": null,
+          "school": null,
+          "math": null,
+          "science": null,
+          "reading": null,
+          "problem_solving": null
+        }
+      }
+    }
+  },
+
+  "cycles": {
+    "years": [2018, 2022, 2025],
+    "basis": 2018
+  },
+
+  "countries": {
+    "column_alias": "COUNTRY",
+    "philippines": "PHL",
+    "global_include": "all",
+    "global_exclude": ["PHL"],
+    "sample_threshold": 30
+  },
+
+  "keys": {
+    "COUNTRY": "CNT",
+    "SCHOOL_ID": "CNTSCHID",
+    "STUDENT_ID": "CNTSTUID",
+    "STRATUM": "STRATUM",
+    "CYCLE": "CYC"
+  },
+
+  "weights": {
+    "final": "W_FSTUWT",
+    "replicate_pattern": "W_FSTURWT{i}",
+    "n_replicates": 80,
+    "fay_factor": 0.5
+  },
+
+  "plausible_values": {
+    "pattern": "PV{i}{domain}",
+    "n": { "2018": 10, "2022": 10, "2025": 10 },
+    "domains": { "MATH": "MATH", "READ": "READ", "SCIE": "SCIE", "PROB": "PROB" },
+    "policy": "mean_of_pvs"
+  },
+
+  "missing_codes": {
+    "_note": "PISA user-missing codes. Single-digit items use 5-9, two-digit items 95-99, indices 9995-9999 (and wider variants). pyreadstat converts these to NaN automatically unless user_missing=True.",
+    "item_1digit": [5, 7, 8, 9],
+    "item_2digit": [95, 97, 98, 99],
+    "index_4digit": [9995, 9997, 9998, 9999],
+    "index_7digit": [9999995, 9999997, 9999998, 9999999]
+  },
+
+  "columns": {
+    "PV_MATH":         { "source": "student", "2018": "PV{i}MATH",    "2022": "PV{i}MATH",  "2025": "PV{i}MATH" },
+    "PV_READ":         { "source": "student", "2018": "PV{i}READ",    "2022": "PV{i}READ",  "2025": "PV{i}READ" },
+    "PV_SCIE":         { "source": "student", "2018": "PV{i}SCIE",    "2022": "PV{i}SCIE",  "2025": "PV{i}SCIE" },
+    "PV_PROB":         { "source": "student", "2018": "PV{i}PROB",    "2022": "PV{i}PROB",  "2025": "PV{i}PROB" },
+
+    "ESCS":            { "source": "student", "2018": "ESCS",         "2022": "ESCS",       "2025": "ESCS" },
+    "HOMEPOS":         { "source": "student", "2018": "HOMEPOS",      "2022": "HOMEPOS",    "2025": "HOMEPOS" },
+    "HISEI":           { "source": "student", "2018": "HISEI",        "2022": "HISEI",      "2025": "HISEI" },
+    "PAREDINT":        { "source": "student", "2018": "PAREDINT",     "2022": "PAREDINT",   "2025": "PAREDINT" },
+
+    "SEX":             { "source": "student", "2018": "ST004D01T",    "2022": "ST004D01T",  "2025": "ST004D01T" },
+    "GRADE":           { "source": "student", "2018": "GRADE",        "2022": "GRADE",      "2025": "GRADE" },
+    "REPEAT":          { "source": "student", "2018": "REPEAT",       "2022": "REPEAT",     "2025": "REPEAT" },
+    "DURECEC":         { "source": "student", "2018": "DURECEC",      "2022": "DURECEC",    "2025": "DURECEC" },
+    "IMMIG":           { "source": "student", "2018": "IMMIG",        "2022": "IMMIG",      "2025": "IMMIG" },
+    "HOME_LANG":       { "source": "student", "2018": "ST022Q01TA",   "2022": "ST022Q01TA", "2025": "ST022Q01TA" },
+
+    "BELONG":          { "source": "student", "2018": "BELONG",       "2022": "BELONG",     "2025": "BELONG" },
+    "BULLIED":         { "source": "student", "2018": "BEINGBULLIED", "2022": "BULLIED",    "2025": "BULLIED" },
+    "TEACHSUP":        { "source": "student", "2018": "TEACHSUP",     "2022": "TEACHSUP",   "2025": "TEACHSUP" },
+    "DISCLIM":         { "source": "student", "2018": "DISCLIMA",     "2022": "DISCLIM",    "2025": "DISCLIM" },
+
+    "SCHOOL_COMMUNITY":{ "source": "school",  "2018": "SC001Q01TA",   "2022": "SC001Q01TA", "2025": "SC001Q01TA" },
+    "SCHOOL_TYPE":     { "source": "school",  "2018": "SC013Q01TA",   "2022": "SC013Q01TA", "2025": "SC013Q01TA" },
+    "STRATIO":         { "source": "school",  "2018": "STRATIO",      "2022": "STRATIO",    "2025": "STRATIO" },
+    "EDUSHORT":        { "source": "school",  "2018": "EDUSHORT",     "2022": "EDUSHORT",   "2025": "EDUSHORT" },
+    "STAFFSHORT":      { "source": "school",  "2018": "STAFFSHORT",   "2022": "STAFFSHORT", "2025": "STAFFSHORT" }
+  },
+
+  "codes": {
+    "_note": "Category codes used by encodings and group rules. Verify against each cycle's codebook (SC001Q01TA gained categories in 2022).",
+    "SEX": { "female": [1], "male": [2] },
+    "HOME_LANG": { "test_language": [1], "other_language": [2] },
+    "SCHOOL_TYPE": { "public": [1], "private": [2] },
+    "SCHOOL_COMMUNITY": { "rural": [1], "town": [2, 3], "city": [4, 5, 6] },
+    "IMMIG": { "native": [1], "second_gen": [2], "first_gen": [3] },
+    "REPEAT": { "repeated": [1], "not_repeated": [0] }
+  },
+
+  "preprocessing": {
+    "max_missing_rate_per_factor": 0.30,
+    "missing_policy": "drop_factor_if_above_threshold_else_weighted_group_mean",
+    "scaling": {
+      "method": "zscore",
+      "reference": "pooled_global_weighted",
+      "_note": "Means/SDs are computed once on the reference cycle (cycles.basis) of the global sample and reused for every cycle and for PH, so M_G and M_PH live in the same units."
+    },
+    "aggregation": "weighted_mean",
+    "pv_scale_divisor": 100
+  },
+
+  "solver": {
+    "svd": { "tol": 1e-12, "max_sweeps": 75 },
+    "rank_rtol": null,
+    "_rank_rtol_note": "null means rtol = max(m, n) * machine epsilon, same rule numpy uses.",
+    "lsq_default_method": "qr",
+    "qr_rank_warning_rtol": 1e-10,
+    "random_seed": 138
+  }
+}
