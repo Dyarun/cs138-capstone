@@ -59,15 +59,24 @@ def resolve(ref: Any) -> Any:
 
 
 # ------------------------------------------------------------------ paths and cycles
+ENV_DIRS = {"raw_dir": "CS138_RAW_DIR", "processed_dir": "CS138_PROCESSED_DIR", "results_dir": "CS138_RESULTS_DIR"}
+
+
 def path(key: str) -> Path:
-    """Absolute path for an entry under 'paths' (relative entries are resolved from the repo root)."""
-    p = Path(cfg(f"paths.{key}"))
+    """Absolute path for an entry under 'paths' (relative entries are resolved from the repo root).
+
+    raw_dir, processed_dir and results_dir can be overridden with the environment
+    variables CS138_RAW_DIR, CS138_PROCESSED_DIR and CS138_RESULTS_DIR (e.g. a
+    Google Drive folder in Colab) without editing the config.
+    """
+    env = os.environ.get(ENV_DIRS.get(key, ""), "")
+    p = Path(env) if env else Path(cfg(f"paths.{key}"))
     return p if p.is_absolute() else REPO_ROOT / p
 
 
 def datasets() -> list[str]:
     """Dataset keys under paths.raw_files, e.g. ['intl', 'phl']."""
-    return list(cfg("paths.raw_files"))
+    return [k for k in cfg("paths.raw_files") if not k.startswith("_")]
 
 
 def years() -> list[int]:
@@ -164,11 +173,13 @@ def columns_for(cycle: int | str, source: str) -> dict[str, str]:
 
 
 def usecols(cycle: int | str, source: str) -> list[str]:
-    """Raw columns to read from a file: ids, weights (student file) and the mapped variables."""
+    """Raw columns to read from a file: ids, weights (student file) and the mapped variables.
+    Replicate weights are included only when config weights.load_replicates is true."""
     cols = [cfg("keys.COUNTRY"), cfg("keys.SCHOOL_ID")]
     if source == "student":
         cols += [cfg("keys.STUDENT_ID"), cfg("keys.STRATUM"), cfg("weights.final")]
-        cols += replicate_weights()
+        if cfg("weights.load_replicates", False):
+            cols += replicate_weights()
     cols += list(columns_for(cycle, source))
     return list(dict.fromkeys(cols))
 
@@ -212,6 +223,29 @@ def transition_pairs(scope: str) -> list[dict]:
     ys = set(years())
     return [p for p in load_obj("transition_pairs")[scope]
             if p.get("enabled", True) and p["from"] in ys and p["to"] in ys]
+
+
+def _fmt(o: Any, ind: int = 0) -> str:
+    """JSON text with short flat dicts/lists on one line (keeps obj/*.json readable)."""
+    flat = lambda v: not isinstance(v, (dict, list))
+    pad = "  " * ind
+    one = json.dumps(o, ensure_ascii=False)
+    if isinstance(o, dict) and o:
+        if len(one) <= 120 and all(flat(v) or (isinstance(v, list) and all(map(flat, v))) for v in o.values()):
+            return one
+        body = ",\n".join(f"{pad}  {json.dumps(k)}: {_fmt(v, ind + 1)}" for k, v in o.items())
+        return "{\n" + body + f"\n{pad}}}"
+    if isinstance(o, list) and o:
+        if len(one) <= 120 and all(map(flat, o)):
+            return one
+        body = ",\n".join(f"{pad}  {_fmt(v, ind + 1)}" for v in o)
+        return "[\n" + body + f"\n{pad}]"
+    return one
+
+
+def write_json(p: Path | str, obj: Any) -> None:
+    """Write a config/obj JSON file in the repository's compact style."""
+    Path(p).write_text(_fmt(obj) + "\n", encoding="utf-8")
 
 
 def reload() -> None:

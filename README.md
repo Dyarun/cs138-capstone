@@ -7,20 +7,24 @@ M_G is fitted on international data, and M_PH = M_G + ΔM is calibrated on Phili
 
 ```
 config/variables.json      THE file to edit: paths, cycles, PISA column names, codes, thresholds, solver settings
-obj/factor_dict.json       which factors enter the state vector (0.3); fill 'factors' using '_template'
-obj/group_dict.json        derived variables + demographic groups (0.5); fill 'groups' using '_template'
+obj/factor_dict.json       which factors enter the state vector (0.3): 19 state factors
+obj/group_dict.json        derived variables + demographic groups (0.5): 12 fit cells + 14 descriptive
 obj/transition_pairs.json  which cycle pairs give (x, y) columns: global 2018→22, 22→25; PH the same
 imple/config.py            loader: col(), raw_file(), available_cycles(), state_factors(), groups(), transition_pairs()
 imple/svd.py               1.1 own SVD (one-sided Jacobi), rank, condition number, pinv, truncation   [stub]
 imple/lsq.py               1.2 normal equations / QR / SVD least squares, fit_factor_matrix            [stub]
 imple/tikhonov.py          1.3 Tikhonov with prior M0, GCV / L-curve choice of λ                       [stub]
 imple/perturbation.py      2.2 ΔM solver, M_PH, Weyl bound                                             [stub]
-prep/load.py               0.1/0.2 read .sav, merge school file, rename to aliases, country filter      [stub]
-prep/clean.py              0.4 encode factors, PV means, missing report, z-score scaler                [stub]
-prep/groups.py             0.5 derived variables (ESCS_PCTL, LOCATION), group masks, sizes            [stub]
-prep/vectors.py            0.6 representative vectors, build X and Y from transition pairs            [stub]
+prep/load.py               0.1/0.2 read .sav, merge school file, rename to aliases, PH split, cache      [done]
+prep/clean.py              0.4 missing codes, encode, PV means, verification log, missing report, scaler [done]
+prep/groups.py             0.5 derived variables (ESCS_PCTL, LOCATION), group masks, sizes            [done]
+prep/vectors.py            0.6 representative vectors (+ CLT se), X and Y, coverage, column weights   [done]
+prep/report.py             Phase 0 tables and figure for the notebook                                 [done]
+docs/decisions.md          0.7 data-handling decisions note
 pipeline.py                glue: phase0() → phase1() → phase2(); the notebook calls these
 tests/run_all.py           runs every module's synthetic self-test
+tests/synthetic_pisa.py    small FAKE PISA files (real names/layout) for testing before the data is in
+tests/test_phase0.py       Phase 0 checks: missing codes, quartiles, partition, scaler, vectors, X/Y
 data/raw/                  PISA files (git-ignored); names set in config paths.raw_files
 data/processed/, results/  written by the pipeline
 ```
@@ -39,6 +43,33 @@ config/variables.json ──► imple/config.py ◄── obj/*.json
 - `available_cycles(dataset)` returns the years in `cycles.years` whose file is set and exists on disk. The pipeline loops over those, so adding a dataset only means filling in its path.
 - The state vector order is the order of the `factors` with role `state` and `include: true`. That count is n, and M is n × n.
 - One scaler is fitted on the global sample of `cycles.basis` and reused for every cycle and for PH, so M_G and M_PH are in the same units.
+
+## Getting the data
+
+Download the SPSS student and school files from the OECD PISA database and place them as
+
+```
+data/raw/intl/2018/CY07_MSU_STU_QQQ.sav     data/raw/intl/2018/CY07_MSU_SCH_QQQ.sav
+data/raw/intl/2022/CY08MSP_STU_QQQ.SAV      data/raw/intl/2022/CY08MSP_SCH_QQQ.SAV
+```
+
+or anywhere else and set `CS138_RAW_DIR` (e.g. a Google Drive folder in Colab). The Philippine sample is taken from
+the international files, so no separate PH download is needed. 2025: add the file names under `paths.raw_files.intl.2025`.
+
+No data yet? `from pipeline import use_synthetic_data; use_synthetic_data()` points every phase at small fake files with
+the same layout, so code can be written and tested now. Numbers from synthetic data are not findings.
+
+## Colab
+
+```python
+!git clone https://github.com/Dyarun/cs138-capstone.git
+%cd cs138-capstone
+!pip install -q pyreadstat
+from google.colab import drive; drive.mount('/content/drive')
+import os; os.environ["CS138_RAW_DIR"] = "/content/drive/MyDrive/<folder with intl/2018/...>"
+from pipeline import phase0
+data = phase0()
+```
 
 ## Implementation order (each step has a self-test or a clear output)
 

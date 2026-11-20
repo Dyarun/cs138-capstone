@@ -8,9 +8,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from imple import lsq, perturbation, svd, tikhonov  # noqa: E402
+from tests import test_phase0  # noqa: E402
 
 ok = True
-for mod in (svd, lsq, tikhonov, perturbation):
+for mod in (test_phase0, svd, lsq, tikhonov, perturbation):
     print(f"\n== {mod.__name__}")
     try:
         ok &= mod._self_test()

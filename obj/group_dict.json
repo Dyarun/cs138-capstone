@@ -1,14 +1,15 @@
 {
   "_meta": {
-    "version": 1,
-    "updated": "2026-11-18",
+    "version": 2,
+    "updated": "2026-11-20",
     "deliverable": "0.5 Selected demographic groups (group dictionary)",
     "how_to_read": [
       "Variables are ALIASES from config/variables.json; category codes come from config 'codes', so a recoded category is changed there, not here.",
-      "A rule is a list of conditions joined by AND. Each condition is {var, op, value}. Supported ops: 'in' (value is a list of codes or a 'codes.X.y' reference), 'between' (inclusive [lo, hi] on a derived quantile), '==' and '!='.",
+      "A rule is a list of conditions joined by AND. Each condition is {var, op, value}. Supported ops: 'in' (value is a list of codes or a 'codes.X.y' reference), 'between' (lo < v <= hi, with lo = 0 inclusive, on a derived quantile), '==' and '!='.",
       "Groups may overlap; they do not partition the data.",
       "Groups are formed within each (country, cycle). Group definitions must be stable over time because the pseudo-panel in transition_pairs.json follows the same group from one cycle to the next.",
-      "size_intl and size_ph are filled in by the preprocessing code (number of students, weighted population)."
+      "size_intl and size_ph are filled in by the preprocessing code (number of students, weighted population).",
+      "fit: true marks the 12 cells (ESCS quartile x location) that form the columns of X and Y in Phases 1 and 2. They partition every country's students with a known location, so no student is counted twice in the fits. fit: false groups are descriptive: representative vectors are still computed for them (effectiveness tables in 1.5/2.4, Phase 4 and 5 comparisons)."
     ],
     "min_students_per_cell": "countries.sample_threshold"
   },
@@ -16,20 +17,13 @@
     "ESCS_PCTL": {
       "source": "ESCS",
       "method": "weighted_percentile_rank",
-      "within": [
-        "COUNTRY",
-        "CYCLE"
-      ],
+      "within": ["COUNTRY", "CYCLE"],
       "notes": "Weighted percentile rank of ESCS inside each country and cycle, in [0, 1]. Quartiles are relative to the student's own country."
     },
     "LOCATION": {
       "source": "SCHOOL_COMMUNITY",
       "method": "map_codes",
-      "map": {
-        "rural": "codes.SCHOOL_COMMUNITY.rural",
-        "town": "codes.SCHOOL_COMMUNITY.town",
-        "city": "codes.SCHOOL_COMMUNITY.city"
-      },
+      "map": {"rural": "codes.SCHOOL_COMMUNITY.rural", "town": "codes.SCHOOL_COMMUNITY.town", "city": "codes.SCHOOL_COMMUNITY.city"},
       "notes": "OECD convention: rural = village under 3,000 people, town = 3,000 to 100,000, city = over 100,000."
     },
     "PH_REGION": {
@@ -37,7 +31,7 @@
       "method": "map_codes",
       "map": {},
       "enabled": false,
-      "notes": "TODO: fill from the PHL stratum labels in the codebook (e.g. NCR, Luzon, Visayas, Mindanao). Needed for Phase 5; global data has no comparable region."
+      "notes": "TODO (needs the PHL codebook): map the PHL STRATUM codes to regions (e.g. NCR, rest of Luzon, Visayas, Mindanao). prep.load.stratum_labels() prints the labels from the .sav metadata. Needed for Phase 5; the global data has no comparable region."
     }
   },
   "_template": {
@@ -51,15 +45,360 @@
       }
     ],
     "rationale": "<why this group matters for a research question or hypothesis>",
-    "used_in": [
-      "phase1",
-      "phase2",
-      "phase4",
-      "phase5"
-    ],
+    "used_in": ["phase1", "phase2", "phase4", "phase5"],
     "ph_only": false,
     "size_intl": null,
-    "size_ph": null
+    "size_ph": null,
+    "fit": true
   },
-  "groups": []
+  "groups": [
+    {
+      "id": "Q1_RURAL",
+      "label": "ESCS bottom quartile, rural school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0, 0.25]},
+        {"var": "LOCATION", "op": "==", "value": "rural"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects. Also the most disadvantaged cell: the PDE target group.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q1_TOWN",
+      "label": "ESCS bottom quartile, town school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0, 0.25]},
+        {"var": "LOCATION", "op": "==", "value": "town"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q1_CITY",
+      "label": "ESCS bottom quartile, city school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0, 0.25]},
+        {"var": "LOCATION", "op": "==", "value": "city"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q2_RURAL",
+      "label": "ESCS second quartile, rural school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.25, 0.5]},
+        {"var": "LOCATION", "op": "==", "value": "rural"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q2_TOWN",
+      "label": "ESCS second quartile, town school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.25, 0.5]},
+        {"var": "LOCATION", "op": "==", "value": "town"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q2_CITY",
+      "label": "ESCS second quartile, city school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.25, 0.5]},
+        {"var": "LOCATION", "op": "==", "value": "city"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q3_RURAL",
+      "label": "ESCS third quartile, rural school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.5, 0.75]},
+        {"var": "LOCATION", "op": "==", "value": "rural"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q3_TOWN",
+      "label": "ESCS third quartile, town school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.5, 0.75]},
+        {"var": "LOCATION", "op": "==", "value": "town"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q3_CITY",
+      "label": "ESCS third quartile, city school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.5, 0.75]},
+        {"var": "LOCATION", "op": "==", "value": "city"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q4_RURAL",
+      "label": "ESCS top quartile, rural school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.75, 1.0]},
+        {"var": "LOCATION", "op": "==", "value": "rural"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q4_TOWN",
+      "label": "ESCS top quartile, town school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.75, 1.0]},
+        {"var": "LOCATION", "op": "==", "value": "town"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "Q4_CITY",
+      "label": "ESCS top quartile, city school",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.75, 1.0]},
+        {"var": "LOCATION", "op": "==", "value": "city"}
+      ],
+      "rationale": "Fit cell. Crossing socioeconomic status with location puts both hypothesis dimensions (socioeconomic and regional) in the columns of X, so M can separate their effects. Also the most advantaged cell: the PDE source group for urban-targeted tweaks.",
+      "used_in": ["phase1", "phase2", "phase3", "phase4", "phase5"],
+      "fit": true,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "ALL",
+      "label": "All students",
+      "rule": [],
+      "rationale": "Country average; the headline comparison of M_G against M_PH.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "ESCS_Q1",
+      "label": "ESCS bottom quartile (within country)",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0, 0.25]}
+      ],
+      "rationale": "Socioeconomic gradient; NLA hypothesis and priority ranking per student category.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "ESCS_Q2",
+      "label": "ESCS second quartile (within country)",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.25, 0.5]}
+      ],
+      "rationale": "Socioeconomic gradient; NLA hypothesis and priority ranking per student category.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "ESCS_Q3",
+      "label": "ESCS third quartile (within country)",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.5, 0.75]}
+      ],
+      "rationale": "Socioeconomic gradient; NLA hypothesis and priority ranking per student category.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "ESCS_Q4",
+      "label": "ESCS top quartile (within country)",
+      "rule": [
+        {"var": "ESCS_PCTL", "op": "between", "value": [0.75, 1.0]}
+      ],
+      "rationale": "Socioeconomic gradient; NLA hypothesis and priority ranking per student category.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "RURAL",
+      "label": "Rural schools",
+      "rule": [
+        {"var": "LOCATION", "op": "==", "value": "rural"}
+      ],
+      "rationale": "Urban/rural contrast; source and target groups of the PDE hypothesis (urban-targeted tweak reaching rural students).",
+      "used_in": ["phase1", "phase2", "phase4", "phase5"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "TOWN",
+      "label": "Town schools",
+      "rule": [
+        {"var": "LOCATION", "op": "==", "value": "town"}
+      ],
+      "rationale": "Urban/rural contrast; source and target groups of the PDE hypothesis (urban-targeted tweak reaching rural students).",
+      "used_in": ["phase1", "phase2", "phase4", "phase5"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "CITY",
+      "label": "City schools",
+      "rule": [
+        {"var": "LOCATION", "op": "==", "value": "city"}
+      ],
+      "rationale": "Urban/rural contrast; source and target groups of the PDE hypothesis (urban-targeted tweak reaching rural students).",
+      "used_in": ["phase1", "phase2", "phase4", "phase5"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "PUBLIC",
+      "label": "Public schools",
+      "rule": [
+        {"var": "SCHOOL_TYPE", "op": "in", "value": "codes.SCHOOL_TYPE.public"}
+      ],
+      "rationale": "Most PH students are in public schools; school-sector contrast.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "PRIVATE",
+      "label": "Private schools",
+      "rule": [
+        {"var": "SCHOOL_TYPE", "op": "in", "value": "codes.SCHOOL_TYPE.private"}
+      ],
+      "rationale": "School-sector contrast.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "FEMALE",
+      "label": "Female students",
+      "rule": [
+        {"var": "SEX", "op": "in", "value": "codes.SEX.female"}
+      ],
+      "rationale": "Gender gap (PH girls outperform boys in reading).",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "MALE",
+      "label": "Male students",
+      "rule": [
+        {"var": "SEX", "op": "in", "value": "codes.SEX.male"}
+      ],
+      "rationale": "Gender gap.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "LANG_TEST",
+      "label": "Speaks the test language at home",
+      "rule": [
+        {"var": "HOME_LANG", "op": "in", "value": "codes.HOME_LANG.test_language"}
+      ],
+      "rationale": "Language-of-instruction effect, central to the PH situation.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    },
+    {
+      "id": "LANG_OTHER",
+      "label": "Speaks another language at home",
+      "rule": [
+        {"var": "HOME_LANG", "op": "in", "value": "codes.HOME_LANG.other_language"}
+      ],
+      "rationale": "Language-of-instruction effect.",
+      "used_in": ["phase1", "phase2", "phase4"],
+      "fit": false,
+      "ph_only": false,
+      "size_intl": null,
+      "size_ph": null
+    }
+  ]
 }
